@@ -77,7 +77,20 @@ ENTRY(memcpy)
 	STOREX (r4, r3)
 .Lcopy32_64bytes:
 
-	and.f	lp_count, r2, ZOLAND ;Last remaining 31 bytes
+#ifdef __LL64__
+	and     r2, r2, ZOLAND ; Last remaining 31 bytes
+	lsr.f   lp_count, r2, 2	;Convert to 32-bit words.
+	lpnz    @.Lcopy32b
+	;;  LOOP START
+	ld.ab   r5,[r1,4]
+	st.ab   r5,[r3,4]
+.Lcopy32b:
+
+	and.f   lp_count, r2, 0x03 ; Last top 4 (3) bytes
+#else
+	and.f   lp_count, r2, ZOLAND
+#endif
+
 .Lsmallchunk:
 	lpnz	@.Lcopyremainingbytes
 	;; LOOP START

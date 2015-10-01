@@ -96,7 +96,14 @@ ENTRY(memset)
 #endif
 .Lset32bytes:
 
-	and.f	lp_count, r2, 0x1F ;Last remaining 31 bytes
+        and     r2, r2, 0x1F       ; Last remaining 31 bytes
+	lsr.f   lp_count, r2, 2	;Convert to 32-bit words
+	lpnz    @.Lset32b
+	;;  LOOP START
+        st.ab   r4, [r3, 4]
+.Lset32b:
+
+	and.f	lp_count, r2, 0x03 ;Last remaining 31 bytes
 .Lsmallchunk:
 	lpnz	.Lcopy3bytes
 	;; LOOP START
